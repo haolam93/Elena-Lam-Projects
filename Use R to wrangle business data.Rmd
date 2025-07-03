@@ -1,0 +1,199 @@
+---
+title: "Assignment 2 - My Hao, Lam - 21435050"
+output: html_notebook
+---
+
+```{r}
+install.packages("stringr")
+library(readr)
+library(stringr)
+library(dplyr)
+library(readxl)
+library(tidyverse)
+library(lubridate)
+```
+
+### 1.1
+```{r}
+female_players <- read_csv("C:/Users/X1 yoga/Downloads/Master - Semester 2/Data Wrangling and R/Assignment 2/Assignment 2/female_players_23_updated.csv")
+nationality <- read_csv("C:/Users/X1 yoga/Downloads/Master - Semester 2/Data Wrangling and R/Assignment 2/Assignment 2/Nationality.csv")
+colname <- names(female_players)
+names(female_players) <- str_replace_all(colname, ' ', '_')
+colname <- names(nationality)
+names(nationality) <- str_replace_all(colname, ' ', '_')
+female_players$date_of_birth <- dmy(female_players$date_of_birth)
+summary(female_players)
+```
+
+### 1.2
+```{r}
+sum(duplicated(female_players))
+sum(duplicated(nationality))
+```
+
+```{r}
+cat("Number of rows before removing:", nrow(nationality), "\n")
+```
+
+```{r}
+nationality <- nationality[!duplicated(nationality), ]
+cat("Number of rows after removing:", nrow(nationality), "\n")
+```
+
+```{r}
+is.na(female_players$value_euro)
+```
+
+```{r}
+female_players$value_euro <- str_replace_all(female_players$value_euro, "/NA", "")
+female_players$value_euro
+```
+
+### 1.3
+
+```{r}
+fe_na <- female_players %>% inner_join(nationality, by = "nationality_id")
+fe_na
+```
+
+```{r}
+filter(fe_na, fifa_version == 23, preferred_foot == 'Right', potential > 85, fifa_update == 9, nationality_name == 'France') %>% 
+select(short_name, nationality_name)
+```
+
+### 1.4
+```{r}
+goalkeepers_23_9 <- filter(fe_na, nation_position == 'GK', fifa_version == 23, fifa_update == 9)
+selection <- goalkeepers_23_9 %>%
+  select(player_id, short_name, nation_position, age, international_reputation)
+sort <- selection %>%
+  arrange(-(international_reputation), age)
+top5_goalkeepers <- head(sort, 5)
+top5_goalkeepers
+```
+
+### 1.5
+
+```{r}
+top3 <- filter(fe_na, international_reputation >= 3, fifa_version == 23, fifa_update == 9 ) %>%
+  group_by(nationality_name) %>%
+  summarise(number_players = n(), avg_overall_score = mean(overall)) %>%
+  arrange(-(number_players))
+top3_highest <- head(top3, 3)
+top3_highest
+```
+
+### 1.6
+```{r}
+library(ggplot2)
+fe_na %>% filter(nationality_name %in% c("United States", "Australia"), fifa_version == 23, fifa_update == 9)%>%ggplot(aes(x=nationality_name, y=overall, colour = nationality_name))+geom_boxplot()
+```
+
+### 1.7
+
+### a) skill moves, preferred foot, weak foot, and potential.
+
+###b)
+
+```{r}
+b <- filter(fe_na, fifa_version == 23, fifa_update == 9, nation_position == 'GK')
+select_b <- b %>%
+  select(short_name, nation_position, preferred_foot, weak_foot, skill_moves, potential)
+top5_goalkeepers <- head(select_b, 5)
+top5_goalkeepers
+```
+
+###c) Because skill moves represent the player's flexibility in movement, the higher the skill move rank the better. Furthermore, the weak foot is 5 representing this player is both-footed, and 1 demonstrates this player has a weak shot power and ball control for the other foot of that player than his preferred foot. Moreover, the preferred foot shows us the player's preferred foot. Finally, the higher number of potential indicates more potential players in the future. For instance: A. Naeher- GK, the preferred foot is Right, the weak foot is 3, skill move is 1, and potential is 85, it asserts that A. Naeher is a good GK because as a goalkeeper doesn't require a skill move too high, her weak foot is left and the shot power and ball control for the right foot is more than average, and potential is 85 is good.
+
+### 2.1
+
+```{r}
+library(readxl)
+Players <- read_excel("C:/Users/X1 yoga/Downloads/Master - Semester 2/Data Wrangling and R/Assignment 2/Assignment 2/Players.xlsx",skip = 1)
+colnames(Players) <- c('Country/Position', '2019', '2020', '2021', '2022', '2023')
+glimpse(Players)
+```
+
+###2.2.a
+```{r}
+library(tibble)
+Players <- Players %>% pivot_longer(cols = c('2019', '2020', '2021', '2022', '2023'), names_to = "Year", values_to = "value")
+Players <-Players %>% drop_na(value)
+Players
+```
+
+###2.2.b
+```{r}
+Players <- Players %>% 
+  separate('Country/Position', c('Country', 'Position'), sep = "/", convert = TRUE)
+```
+
+###2.2.c
+```{r}
+Players <- Players %>% 
+  separate('value', c('NumberPlayers', 'Score'), sep = "-", convert = TRUE)
+```
+
+```{r}
+Players$Score <- str_replace_all(Players$Score, "/100", "")
+Players$Score <- as.numeric(Players$Score)
+```
+
+###2.2.d
+```{r}
+dim(Players)
+```
+
+###2.2.e
+
+```{r}
+Players %>% summarise(Number_dis_country  = n_distinct(Country), Number_dis_year = n_distinct(Year))
+```
+
+###2.3
+```{r}
+Players %>% filter(Year == 2023)%>%
+  group_by(Country)%>%
+  summarise(AVG_Score = mean(Score)) %>%
+  filter(AVG_Score >= 65, AVG_Score < 70)
+```
+
+###2.4
+```{r}
+Continent <- read_excel("C:/Users/X1 yoga/Downloads/Master - Semester 2/Data Wrangling and R/Assignment 2/Assignment 2/Players.xlsx",sheet = "Continent", skip = 2, col_names = TRUE)
+```
+
+```{r}
+names(Continent) <- c("Country", "Continent")
+```
+
+```{r}
+nrow(Continent)
+```
+
+```{r}
+Players %>% right_join(Continent, by = "Country") %>%
+  filter(is.na(Country))%>%
+  summarise(n())
+```
+
+###2.5
+### a) Average score because it shows whether a team's ability to win the match is more or less 
+
+### b)
+```{r}
+top5countries <- filter(Players, Year == 2023)%>%
+  group_by(Country)%>%
+  summarise(avg_Score = mean(Score)) %>%
+  filter(avg_Score >= 70) 
+top5 <- head(top5countries, 5)
+top5
+```
+
+###c
+```{r}
+library(ggplot2)
+top5 %>% ggplot(aes(x= Country, y=avg_Score, colour = Country))+ geom_col()
+```
+
+###d) This chart demonstrates Japanese is the best team in 2023 and has the highest average score, the following positions are Israel, Canada, and Iceland, in the lowest position in this top 5 is Thailand. The African team should improve their score based on the average score here is more than 70 to develop their team. 
