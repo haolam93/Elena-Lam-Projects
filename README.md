@@ -9,7 +9,7 @@ In 2024–2025, I expanded into AI and cloud analytics by working with Prolog, d
 
 ## Projects:
 
-2023:
+### 2023:
 
 - Designed relational databases and performed data retrieval using SQL.
 - Applied R programming for business data wrangling and text-based datasets.
@@ -21,7 +21,7 @@ In 2024–2025, I expanded into AI and cloud analytics by working with Prolog, d
 - Created Tableau dashboards for banking and sports analytics insights.
 - Developed SAS Viya dashboards for gross margin, product performance, and customer satisfaction segmentation.
 
-2024:
+### 2024:
 - Built and evaluated predictive models in R for car price prediction in the U.S. used car market.
 - Developed decision trees and regression models using SAS Enterprise Miner for vehicle pricing.
 - Performed customer segmentation and association rule mining in SAS.
@@ -38,7 +38,7 @@ In 2024–2025, I expanded into AI and cloud analytics by working with Prolog, d
 - Delivered an oral case study on AI for energy transformation using Databricks.
 - Produced a technical report on AI use in inventory, warehouse, and supply chain in retail.
 
-2025:
+### 2025:
 - Designed and optimized a dimensional model for MusiqStream’s data warehouse using Kimball methodology.
 - Built a Text Intelligence Toolkit using Python for chatbots, authorship attribution, and fake news detection.
 - Led a real-time trading dashboard development for Powersense Inc. using Power BI and Power Automate.
