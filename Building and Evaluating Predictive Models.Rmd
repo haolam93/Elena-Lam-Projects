@@ -1,0 +1,876 @@
+---
+title: "Assignment 1"
+output: html_document
+date: "2024-04-12"
+---
+
+
+```{r}
+#install.packages('Amelia', dependencies = TRUE) 
+library(Amelia)
+
+#install.packages('corrplot', dependencies = TRUE)
+library(corrplot)
+
+#install.packages('caret', dependencies = TRUE) 
+library(caret)
+
+#install.packages('plotly', dependencies = TRUE)
+library(plotly)
+
+#install.packages('dplyr', dependencies = TRUE)
+library(dplyr)
+
+#install.packages('ggplot2', dependencies = TRUE)
+library(ggplot2)
+
+#install.packages('GGally', dependencies = TRUE)
+library(GGally)
+```
+
+```{r}
+library(stringr)
+```
+
+
+```{r}
+setwd("C:/Mí Mí - please don't touch/Master AI/Semester 1 - 24/Predictive/A1")
+getwd
+```
+
+```{r}
+df <- read.csv(file="used_car.csv", header=TRUE, sep=",")
+```
+
+# Part B
+# 1-C
+# Nominal to Numeric
+
+```{r}
+unique(df$make_name)
+numberic_brand <- df$make_name
+Brand_BMW <- as.numeric(numberic_brand == "BMW")
+Brand_AUDI <- as.numeric(numberic_brand == "Audi")
+Brand_TOYOTA <- as.numeric(numberic_brand == "Toyota")
+Brand_FORD <- as.numeric(numberic_brand == "Ford")
+Brand_MES <- as.numeric(numberic_brand == "Mercedes-Benz")
+Brand_VOL <- as.numeric(numberic_brand == "Volkswagen")
+```
+
+```{r}
+unique(df$body_type)
+numberic_bodytype <- df$body_type
+Body_type_Sedan <- as.numeric(numberic_bodytype == "Sedan")
+Body_type_SUV_Crossover <- as.numeric(numberic_bodytype == "SUV / Crossover")
+Body_type_Hatchback <- as.numeric(numberic_bodytype == "Hatchback")
+```
+
+```{r}
+unique(df$fuel_type)
+numberic_fueltype <-df$fuel_type
+Fuel_type_Gas <- as.numeric(numberic_fueltype == "Gasoline")
+Fuel_type_Hybrid <- as.numeric(numberic_fueltype == "Hybrid")
+Fuel_type_Diesel <- as.numeric(numberic_fueltype == "Diesel")
+```
+
+```{r}
+unique(df$transmission)
+numberic_transmission <- df$transmission
+Transmission_Automatic <- as.numeric(numberic_transmission == "Automatic")
+Transmission_Manual <- as.numeric(numberic_transmission == "Manual")
+Transmission_Continuous <- as.numeric(numberic_transmission == "Continuously Variable Transmission")
+Transmission_Dual <- as.numeric(numberic_transmission == "Dual Clutch")
+```
+
+```{r}
+unique(df$wheel_system)
+numberic_wheelsystem <- df$wheel_system
+Wheel_system_All_Wheel <- as.numeric(numberic_wheelsystem == "All-Wheel Drive")
+Wheel_system_Front_Wheel <- as.numeric(numberic_wheelsystem == "Front-Wheel Drive")
+Wheel_system_Rear_Wheel <- as.numeric(numberic_wheelsystem == "Rear-Wheel Drive")
+Wheel_system_Four_Wheel <- as.numeric(numberic_wheelsystem == "Four-Wheel Drive")
+```
+
+
+```{r}
+unique(df$salvage)
+numberic_salvage <- as.numeric(df$salvage)
+```
+
+#Ordinal to Numeric
+
+```{r}
+unique(df$condition)
+condition_new <- factor(df$condition, levels = c("Excellent","Good","Fair"), labels = c(2,1,0))
+
+unique(df$maximum_seating)
+maximum_seating_new <- factor(df$maximum_seating, levels = c("8 seats","7 seats","6 seats","5 seats","4 seats"), labels = c(4,3,2,1,0))
+
+unique(df$engine_cylinders)
+engine_cylinders_new <- factor(df$engine_cylinders, levels = c("12 Cylinders","8 Cylinders","6 Cylinders","5 Cylinders","4 Cylinders","3 Cylinders"), labels = c(5,4,3,2,1,0)) 
+```
+
+```{r}
+df$condition_new <- condition_new
+df$maximum_seating_new <- maximum_seating_new
+df$engine_cylinders_new <- engine_cylinders_new
+df$numberic_salvage <- numberic_salvage
+df$Wheel_system_All_Wheel <- Wheel_system_All_Wheel
+df$Wheel_system_Front_Wheel <- Wheel_system_Front_Wheel
+df$Wheel_system_Rear_Wheel <- Wheel_system_Rear_Wheel
+df$Wheel_system_Four_Wheel <- Wheel_system_Four_Wheel
+df$Transmission_Automatic <- Transmission_Automatic
+df$Transmission_Manual <- Transmission_Manual
+df$Transmission_Continuous <- Transmission_Continuous
+df$Transmission_Dual <- Transmission_Dual
+df$Fuel_type_Gas <- Fuel_type_Gas
+df$Fuel_type_Hybrid <- Fuel_type_Hybrid
+df$Fuel_type_Diesel <- Fuel_type_Diesel
+df$Body_type_Sedan <- Body_type_Sedan
+df$Body_type_SUV_Crossover <- Body_type_SUV_Crossover
+df$Body_type_Hatchback <- Body_type_Hatchback
+df$Brand_BMW <- Brand_BMW
+df$Brand_AUDI <- Brand_AUDI
+df$Brand_TOYOTA <- Brand_TOYOTA
+df$Brand_FORD <- Brand_FORD
+df$Brand_MES <- Brand_MES
+df$Brand_VOL <- Brand_VOL
+```
+
+# 2
+# 2-A
+
+```{r}
+summary(df)
+```
+
+```{r}
+unique(df$front_legroom)
+```
+
+
+```{r}
+unique_value_front <- "#FIELD!"
+df <- df %>%
+  filter(df$front_legroom != unique_value_front)
+```
+
+```{r}
+df <- df[!df$front_legroom==" ",]
+df <- df[!df$front_legroom=="",]
+```
+
+```{r}
+unique(df$front_legroom)
+```
+
+```{r}
+df$front_legroom = as.numeric(df$front_legroom)
+```
+
+
+```{r}
+numeric_variables <- df %>% select(where(is.numeric), -c(numberic_salvage,Wheel_system_All_Wheel,Wheel_system_Front_Wheel ,Wheel_system_Rear_Wheel,Wheel_system_Four_Wheel,Transmission_Automatic ,Transmission_Manual ,Transmission_Continuous ,Transmission_Dual,Fuel_type_Gas ,Fuel_type_Hybrid,Fuel_type_Diesel,Body_type_Sedan,Body_type_SUV_Crossover,Body_type_Hatchback,Brand_BMW,Brand_AUDI,Brand_TOYOTA,Brand_FORD,Brand_MES,Brand_VOL))
+numeric_variables
+```
+
+# 2-A-i
+```{r}
+summary(numeric_variables$price)
+summary(numeric_variables$back_legroom)
+summary(numeric_variables$city_fuel_economy)
+summary(numeric_variables$engine_displacement)
+summary(numeric_variables$front_legroom)
+summary(numeric_variables$fuel_tank_volume)
+summary(numeric_variables$height)
+summary(numeric_variables$highway_fuel_economy)
+summary(numeric_variables$horsepower)
+summary(numeric_variables$length)
+summary(numeric_variables$mileage)
+summary(numeric_variables$wheelbase)
+summary(numeric_variables$width)
+```
+
+```{r}
+sd(numeric_variables$price)
+sd(numeric_variables$back_legroom)
+sd(numeric_variables$city_fuel_economy)
+sd(numeric_variables$engine_displacement)
+sd(numeric_variables$front_legroom)
+sd(numeric_variables$fuel_tank_volume)
+sd(numeric_variables$height)
+sd(numeric_variables$highway_fuel_economy)
+sd(numeric_variables$horsepower)
+sd(numeric_variables$length)
+sd(numeric_variables$mileage)
+sd(numeric_variables$wheelbase)
+sd(numeric_variables$width)
+```
+
+
+## 2-A-ii
+```{r}
+table(df$condition)
+```
+
+```{r}
+table(df$maximum_seating)
+```
+
+```{r}
+table(df$engine_cylinders)
+```
+
+```{r}
+table(df$make_name)
+```
+
+```{r}
+table(df$body_type)
+```
+
+```{r}
+table(df$fuel_type)
+```
+
+```{r}
+table(df$transmission)
+```
+
+```{r}
+table(df$wheel_system)
+```
+
+```{r}
+table(df$salvage)
+```
+
+```{r}
+table(df$year)
+```
+
+
+
+#2-B
+
+# Method to identify which diagram is suitable to find extreme values 
+```{r}
+data_range <- max(numeric_variables, na.rm = TRUE) - min(numeric_variables, na.rm = TRUE)
+
+if (data_range > 50) {
+  print("Boxplot")
+} else if (data_range < 10) {
+  print("Histogram of Data")
+} else {
+  print("Violin Plot of Data")
+}
+```
+
+
+```{r}
+boxplot(numeric_variables$front_legroom, main = "Front_legroom")
+boxplot(numeric_variables$price, main = "Price")
+boxplot(numeric_variables$back_legroom, main = "Back_legroom")
+boxplot(numeric_variables$engine_displacement, main = "Engine_displacement")
+boxplot(numeric_variables$city_fuel_economy, main = "City_fuel_economy")
+boxplot(numeric_variables$fuel_tank_volume, main = "Fuel_tank_volume")
+boxplot(numeric_variables$highway_fuel_economy, main = "Highway_fuel_economy")
+boxplot(numeric_variables$height, main = "Height")
+boxplot(numeric_variables$horsepower, main = "Horsepower")
+boxplot(numeric_variables$length, main = "Length")
+boxplot(numeric_variables$mileage, main = "Mileage")
+boxplot(numeric_variables$wheelbase, main = "Wheelbase")
+boxplot(numeric_variables$width, main = "Width")
+```
+
+# 3
+
+```{r}
+par(mfrow=c(1, 2))
+hist(numeric_variables$mileage, breaks = 100, col="yellow", main ="Mileage")
+hist(numeric_variables$price, breaks = 100, col="yellow", main ="Price")
+hist(numeric_variables$back_legroom, breaks = 100, col="yellow", main ="back_legroom")
+hist(numeric_variables$front_legroom, breaks = 100, col="yellow", main ="front_legroom")
+hist(numeric_variables$city_fuel_economy, breaks = 100, col="yellow", main ="city_fuel_economy")
+hist(numeric_variables$length, breaks = 100, col="yellow", main ="length")
+hist(numeric_variables$height, breaks = 100, col="yellow", main ="height")
+hist(numeric_variables$width, breaks = 100, col="yellow", main ="width")
+hist(numeric_variables$engine_displacement, breaks = 100, col="yellow", main ="engine_displacement")
+hist(numeric_variables$highway_fuel_economy, breaks = 100, col="yellow", main ="highway_fuel_economy")
+hist(numeric_variables$horsepower, breaks = 100, col="yellow", main ="horsepower")
+hist(numeric_variables$wheelbase, breaks = 100, col="yellow", main ="wheelbase")
+hist(numeric_variables$fuel_tank_volume, breaks = 100, col="yellow", main ="fuel_tank_volume")
+```
+
+
+```{r}
+plot(density(numeric_variables$engine_displacement, na.rm = TRUE))
+plot(density(numeric_variables$back_legroom, na.rm = TRUE))
+plot(density(numeric_variables$front_legroom, na.rm = TRUE))
+plot(density(numeric_variables$mileage, na.rm = TRUE))
+plot(density(numeric_variables$height, na.rm = TRUE))
+plot(density(numeric_variables$length, na.rm = TRUE))
+plot(density(numeric_variables$wheelbase, na.rm = TRUE))
+plot(density(numeric_variables$horsepower, na.rm = TRUE))
+plot(density(numeric_variables$highway_fuel_economy, na.rm = TRUE))
+plot(density(numeric_variables$fuel_tank_volume, na.rm = TRUE))
+plot(density(numeric_variables$city_fuel_economy, na.rm = TRUE))
+plot(density(numeric_variables$width, na.rm = TRUE))
+plot(density(numeric_variables$price, na.rm = TRUE))
+```
+
+
+
+```{r}
+#install.packages("moments")
+library(moments)
+skewness(numeric_variables$engine_displacement, na.rm = TRUE)
+```
+
+```{r}
+skewness(numeric_variables$back_legroom, na.rm = TRUE)
+```
+
+```{r}
+skewness(numeric_variables$city_fuel_economy, na.rm = TRUE)
+```
+
+```{r}
+skewness(numeric_variables$front_legroom, na.rm = TRUE)
+```
+
+```{r}
+skewness(numeric_variables$fuel_tank_volume, na.rm = TRUE)
+```
+
+```{r}
+skewness(numeric_variables$highway_fuel_economy, na.rm = TRUE)
+```
+
+```{r}
+skewness(numeric_variables$height, na.rm = TRUE)
+```
+
+```{r}
+skewness(numeric_variables$horsepower, na.rm = TRUE)
+```
+
+```{r}
+skewness(numeric_variables$length, na.rm = TRUE)
+```
+
+```{r}
+skewness(numeric_variables$mileage, na.rm = TRUE)
+```
+
+```{r}
+skewness(numeric_variables$wheelbase, na.rm = TRUE)
+```
+
+```{r}
+skewness(numeric_variables$width, na.rm = TRUE)
+```
+
+```{r}
+skewness(numeric_variables$price, na.rm = TRUE)
+```
+
+
+#4
+#4-A
+
+```{r}
+sapply(df, function(x) sum(is.na(x)))
+```
+
+#4-C
+
+#Replacing N/A by 0
+```{r}
+# install.packages("psych")
+library(psych)
+```
+
+```{r}
+zeros <- df
+is.na(zeros)
+zeros[is.na(zeros)] <- 0
+zeros[is.na(zeros)]
+summary(zeros)
+```
+
+
+```{r}
+mean(zeros$city_fuel_economy, na.rm = TRUE)
+mean(df$city_fuel_economy, na.rm = TRUE)
+```
+```{r}
+mean(zeros$mileage, na.rm = TRUE)
+mean(df$mileage, na.rm = TRUE)
+```
+
+#Deleting records
+
+```{r}
+deleted <- df[complete.cases(numeric_variables),]
+summary(deleted)
+```
+
+```{r}
+mean(deleted$city_fuel_economy, na.rm = TRUE)
+mean(df$city_fuel_economy, na.rm = TRUE)
+```
+```{r}
+mean(deleted$mileage, na.rm = TRUE)
+mean(df$mileage, na.rm = TRUE)
+```
+
+#Replacing with mean of the column 
+
+```{r}
+all_cleaned <- df
+summary(all_cleaned$city_fuel_economy)
+```
+```{r}
+mean(all_cleaned$city_fuel_economy, na.rm = TRUE)
+```
+
+```{r}
+is.na(all_cleaned$city_fuel_economy)
+all_cleaned$city_fuel_economy[is.na(all_cleaned$city_fuel_economy)]
+```
+
+
+```{r}
+summary(all_cleaned$mileage)
+```
+```{r}
+mean(all_cleaned$mileage, na.rm = TRUE)
+```
+
+```{r}
+is.na(all_cleaned$mileage)
+all_cleaned$mileage[is.na(all_cleaned$mileage)]
+```
+
+
+```{r}
+all_cleaned$city_fuel_economy[is.na(all_cleaned$city_fuel_economy)] <- 0
+all_cleaned$city_fuel_economy[is.na(all_cleaned$city_fuel_economy)] <- mean(all_cleaned$city_fuel_economy, na.rm = TRUE)
+summary(all_cleaned$city_fuel_economy)
+```
+
+```{r}
+all_cleaned$mileage[is.na(all_cleaned$mileage)] <- 0
+all_cleaned$mileage[is.na(all_cleaned$mileage)] <- mean(all_cleaned$mileage, na.rm = TRUE)
+summary(all_cleaned$mileage)
+```
+
+
+#Identify which method is the most suitable to use for this dataset
+```{r}
+plot(density(all_cleaned$city_fuel_economy), col="red",
+     main="city_fuel_economy Original (Green) vs Transformed (Yellow)")
+lines(density(zeros$city_fuel_economy, na.rm = TRUE), col="blue")
+lines(density(deleted$city_fuel_economy, na.rm = TRUE), col="black")
+lines(density(all_cleaned$city_fuel_economy, na.rm = TRUE), col="green")
+```
+
+```{r}
+plot(density(all_cleaned$mileage), col="red",
+     main="mileage Original (Green) vs Transformed (Yellow)")
+lines(density(zeros$mileage, na.rm = TRUE), col="blue")
+lines(density(deleted$mileage, na.rm = TRUE), col="black")
+lines(density(all_cleaned$mileage, na.rm = TRUE), col="green")
+```
+
+
+#5
+
+#5-A
+
+#Data transform for right skewed variabels
+
+```{r}
+par(mfrow=c(1, 2))
+trans_mileage <- log(all_cleaned$mileage)
+hist(numeric_variables$mileage, breaks = 100, col="yellow", main ="original")
+hist(transform_mileage, breaks = 100, col="yellow", main ="transformed")
+
+trans_city_fuel_economy <- log(all_cleaned$city_fuel_economy)
+hist(numeric_variables$city_fuel_economy, breaks = 100, col="yellow", main ="original")
+hist(trans_city_fuel_economy, breaks = 100, col="yellow", main ="transformed")
+
+trans_highway_fuel_economy <- log(all_cleaned$highway_fuel_economy)
+hist(numeric_variables$highway_fuel_economy, breaks = 100, col="yellow", main ="original")
+hist(trans_highway_fuel_economy, breaks = 100, col="yellow", main ="transformed")
+
+trans_horsepower <- log(all_cleaned$horsepower)
+hist(numeric_variables$horsepower, breaks = 100, col="yellow", main ="original")
+hist(trans_horsepower, breaks = 100, col="yellow", main ="transformed")
+
+trans_price <- log(all_cleaned$price)
+hist(numeric_variables$price, breaks = 100, col="yellow", main ="original")
+hist(trans_price, breaks = 100, col="yellow", main ="transformed")
+```
+#Choosing a target variable and remove useless variables
+
+```{r}
+target <- all_cleaned$price
+new_df <- subset(all_cleaned, select = -c(price, city_fuel_economy, horsepower, condition, engine_cylinders, make_name, salvage, wheel_system ))
+View(new_df)
+```
+
+```{r}
+ggcorr(new_df, label=TRUE)
+```
+
+#5-B
+
+#click 2 times, please
+
+```{r}
+cols <- c('mileage', 'highway_fuel_economy')
+new_df[cols] <- log(new_df[cols])
+```
+
+```{r}
+new_df[cols]$mileage[is.na(new_df[cols]$mileage)] <- 0
+new_df[cols]$mileage[is.na(new_df[cols]$mileage)] <- mean(new_df[cols]$mileage, na.rm = TRUE)
+summary(new_df[cols]$mileage)
+```
+
+```{r}
+new_df$transform_mileage <- new_df[cols]$mileage
+new_df$transform_highway_fuel_economy <- new_df[cols]$highway_fuel_economy
+```
+
+
+```{r}
+L <- data.matrix(new_df)
+corrL <- cor(L)
+highlyCorrL <- findCorrelation(corrL, cutoff=0.7)
+names(new_df)[highlyCorrL]
+```
+
+```{r}
+remove_high_co <- subset(new_df, select = -c(highway_fuel_economy,height, body_type,wheelbase,Fuel_type_Gas,transform_highway_fuel_economy,Wheel_system_Front_Wheel,Body_type_SUV_Crossover,maximum_seating,Fuel_type_Hybrid,fuel_tank_volume,engine_displacement,Transmission_Automatic,transmission,transform_mileage))
+
+ggcorr(remove_high_co, label=TRUE)
+```
+#Part C
+
+# 1. Building Linear Model 
+```{r}
+remove_high_co$price <- all_cleaned$price
+remove_high_co <- subset(remove_high_co,select = -c(daysonmarket, owner_count, fuel_type))
+ggcorr(remove_high_co, label=TRUE)
+```
+
+```{r}
+remove_high_co$price <- target
+smp_size <- floor(2/3 * nrow(remove_high_co))
+View(remove_high_co)
+```
+
+```{r}
+set.seed(1)
+remove_high_co <- remove_high_co[sample(nrow(remove_high_co)), ]
+used_car.train <- remove_high_co[1:smp_size, ]
+used_car.test <- remove_high_co[(smp_size+1):nrow(remove_high_co), ]
+formula = price ~.
+model <- lm(formula = formula, data = used_car.train)
+summary(model)$coefficients
+```
+
+```{r}
+as.formula(
+  paste0("y ~ ", round(coefficients(model)[1],2), " + ", 
+         paste(sprintf("%.2f * %s",coefficients(model)[-1], 
+                       names(coefficients(model)[-1])), 
+               collapse=" + ")
+  )
+)
+```
+```{r}
+used_car.train$predicted.price <- predict(model, used_car.train)
+```
+
+```{r}
+used_car.test$predicted.price <- predict(model, used_car.test)
+```
+
+```{r}
+print("Actual Values")
+head(used_car.test$price[1:5])
+print("Predicted Values")
+head(used_car.test$predicted.price[1:5])
+```
+
+```{r}
+pl1 <- used_car.test %>% 
+  ggplot(aes(price,predicted.price)) + 
+  geom_point(alpha=0.5) + 
+  stat_smooth(aes(colour='red')) + 
+  xlab('Actual value of price') + 
+  ylab('Predicted value of price')+ 
+  theme_bw()
+ggplotly(pl1)
+```
+
+```{r}
+r_squared <- summary(model)$r.squared
+print(paste("R Squared: ", r_squared))
+
+error <- used_car.test$price-used_car.test$predicted.price
+rmse <- sqrt(mean(error^2))
+print(paste("Root Mean Square Error: ", rmse))
+```
+
+#Removing Transmission_Continuous
+
+```{r}
+lm_11 <- subset(remove_high_co,select = -c(Transmission_Continuous))
+lm_11$price <- target
+smp_size_11 <- floor(2/3 * nrow(lm_11))
+
+
+set.seed(1)
+lm_11 <- lm_11[sample(nrow(lm_11)), ]
+used_car_11.train <- lm_11[1:smp_size_11, ]
+used_car_11.test <- lm_11[(smp_size_11+1):nrow(lm_11), ]
+formula = price ~.
+model11 <- lm(formula = formula, data = used_car_11.train)
+summary(model11)$coefficients
+```
+
+
+```{r}
+as.formula(
+  paste0("y ~ ", round(coefficients(model11)[1],2), " + ", 
+         paste(sprintf("%.2f * %s",coefficients(model11)[-1], 
+                       names(coefficients(model11)[-1])), 
+               collapse=" + ")
+  )
+)
+```
+
+
+```{r}
+used_car_11.train$predicted.price <- predict(model11, used_car_11.train)
+
+used_car_11.test$predicted.price <- predict(model11, used_car_11.test)
+
+```
+
+
+```{r}
+print("Actual Values")
+head(used_car_11.test$price[1:5])
+print("Predicted Values")
+head(used_car_11.test$predicted.price[1:5])
+```
+
+
+```{r}
+pl11 <- used_car_11.test %>% 
+  ggplot(aes(price,predicted.price)) + 
+  geom_point(alpha=0.5) + 
+  stat_smooth(aes(colour='red')) + 
+  xlab('Actual value of price') + 
+  ylab('Predicted value of price')+ 
+  theme_bw()
+ggplotly(pl11)
+```
+
+```{r}
+r_squared <- summary(model11)$r.squared
+print(paste("R Squared: ", r_squared))
+
+error <- used_car_11.test$price-used_car_11.test$predicted.price
+rmse <- sqrt(mean(error^2))
+print(paste("Root Mean Square Error: ", rmse))
+```
+
+
+#Removing width
+
+```{r}
+lm_12 <- subset(remove_high_co,select = - c(width))
+lm_12$price <- target
+smp_size_12 <- floor(2/3 * nrow(lm_12))
+```
+
+```{r}
+set.seed(1)
+lm_12 <- lm_12[sample(nrow(lm_12)), ]
+used_car_12.train <- lm_12[1:smp_size_12, ]
+used_car_12.test <- lm_12[(smp_size_12+1):nrow(lm_12), ]
+formula = price ~.
+model12 <- lm(formula = formula, data = used_car_12.train)
+summary(model12)$coefficients
+```
+
+```{r}
+as.formula(
+  paste0("y ~ ", round(coefficients(model12)[1],2), " + ", 
+         paste(sprintf("%.2f * %s",coefficients(model12)[-1], 
+                       names(coefficients(model12)[-1])), 
+               collapse=" + ")
+  )
+)
+```
+
+```{r}
+used_car_12.train$predicted.price <- predict(model12, used_car_12.train)
+
+used_car_12.test$predicted.price <- predict(model12, used_car_12.test)
+```
+
+```{r}
+print("Actual Values")
+head(used_car_12.test$price[1:5])
+print("Predicted Values")
+head(used_car_12.test$predicted.price[1:5])
+```
+
+```{r}
+pl12 <- used_car_12.test %>% 
+  ggplot(aes(price,predicted.price)) + 
+  geom_point(alpha=0.5) + 
+  stat_smooth(aes(colour='red')) + 
+  xlab('Actual value of price') + 
+  ylab('Predicted value of price')+ 
+  theme_bw()
+ggplotly(pl12)
+```
+
+```{r}
+r_squared <- summary(model12)$r.squared
+print(paste("R Squared: ", r_squared))
+
+error <- used_car_12.test$price-used_car_12.test$predicted.price
+rmse <- sqrt(mean(error^2))
+print(paste("Root Mean Square Error: ", rmse))
+```
+
+# 2. Build decision tree
+
+```{r}
+library(Amelia)
+missmap(remove_high_co,col=c('yellow','blue'),y.at=1,y.labels='',legend=TRUE)
+```
+
+
+```{r}
+install.packages('rpart', dependencies = TRUE)
+library(rpart)
+install.packages('rpart.plot', dependencies = TRUE)
+library(rpart.plot)
+```
+
+```{r}
+smp_size_d <- floor(2/3 * nrow(remove_high_co)) 
+nrow(remove_high_co)
+```
+
+```{r}
+set.seed(2)
+remove_high_co.selected <- remove_high_co[sample(nrow(remove_high_co)), ]
+sample(5)
+View(remove_high_co.selected)
+```
+```{r}
+dt.train <- remove_high_co.selected[1:smp_size_d, ]  
+
+dt.test <- remove_high_co.selected[(smp_size_d+1):nrow(remove_high_co.selected), ] 
+```
+
+```{r}
+formula = price ~.
+dtree <- rpart(formula, data=dt.train, method="anova")
+dtree$variable.importance
+```
+
+```{r}
+rpart.plot(dtree, type = 4, fallen.leaves = FALSE)
+```
+
+```{r}
+print(dtree)
+```
+```{r}
+predicted.price <- predict(dtree, dt.test)
+```
+
+```{r}
+error <- dt.test$price - predicted.price
+rmse <- sqrt(mean(error^2))
+print(paste("Root Mean Square Error: ", rmse))
+printcp(dtree)
+```
+
+# Prune 1
+
+```{r}
+dtree$cptable[which.min(dtree$cptable[,"xerror"]),"CP"]
+```
+
+```{r}
+pruned_dtree <- prune(dtree, cp = 0.01) 
+rpart.plot(pruned_dtree, type = 4, fallen.leaves = FALSE)
+```
+
+```{r}
+predicted.pruned_dtree.price <- predict(pruned_dtree, dt.test)
+```
+
+```{r}
+error_1 <- dt.test$price - predicted.pruned_dtree.price
+rmse_1 <- sqrt(mean(error_1^2))
+print(paste("Root Mean Square Error: ", rmse_1))
+```
+
+# Prune 2
+
+```{r}
+pruned_dtree_2 <- prune(dtree, cp = 0.013696) 
+rpart.plot(pruned_dtree_2, type = 4, fallen.leaves = FALSE)
+```
+
+```{r}
+predicted.pruned_dtree_2.price <- predict(pruned_dtree_2, dt.test)
+```
+
+```{r}
+error_2 <- dt.test$price - predicted.pruned_dtree_2.price
+rmse_2 <- sqrt(mean(error_2^2))
+print(paste("Root Mean Square Error: ", rmse_2))
+```
+
+# Prune 3
+
+```{r}
+pruned_dtree_3 <- prune(dtree, cp = 0.016424) 
+rpart.plot(pruned_dtree_3, type = 4, fallen.leaves = FALSE)
+```
+
+```{r}
+predicted.pruned_dtree_3.price <- predict(pruned_dtree_3, dt.test)
+```
+
+```{r}
+error_3 <- dt.test$price - predicted.pruned_dtree_3.price
+rmse_3 <- sqrt(mean(error_3^2))
+print(paste("Root Mean Square Error: ", rmse_3))
+```
+
+
+
+
+
+
+
+
+
+
